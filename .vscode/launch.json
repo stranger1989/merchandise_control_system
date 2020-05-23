@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${fileDirname}",
+      "env": {},
+      "args": []
+    },
+    {
+      "name": "Launch main file",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${fileDirname}/main.go",
+      "env": {},
+      "args": []
+    },
+    {
+      "name": "Launch current file",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${file}"
+    }
+  ]
+}
