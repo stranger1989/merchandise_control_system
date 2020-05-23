@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"merchandise_control_system/controllers"
 )
 
 func main() {
-	fmt.Println("get started with go!")
+	controllers.StartWebServer()
 }
