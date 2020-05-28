@@ -9,7 +9,12 @@ import (
 	"merchandise_control_system/config"
 	"merchandise_control_system/models"
 	"net/http"
+	"strconv"
 )
+
+type DeleteResponse struct {
+	Id string `json:"id"`
+}
 
 func rootPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the Go Api Server")
@@ -19,13 +24,18 @@ func rootPage(w http.ResponseWriter, r *http.Request) {
 func fetchAllItems(w http.ResponseWriter, r *http.Request) {
 	var items []models.Item
 	models.GetAllItems(&items)
-	responseItems, err := json.Marshal(items)
+	responseBody, err := json.Marshal(items)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8001")
+	if r.Method == http.MethodOptions {
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseItems)
+	w.Write(responseBody)
 }
 
 func fetchSingleItem(w http.ResponseWriter, r *http.Request) {
@@ -34,13 +44,17 @@ func fetchSingleItem(w http.ResponseWriter, r *http.Request) {
 
 	var item models.Item
 	models.GetSingleItem(&item, id)
-	responseItem, err := json.Marshal(item)
+	responseBody, err := json.Marshal(item)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8001")
+	if r.Method == http.MethodOptions {
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseItem)
+	w.Write(responseBody)
 }
 
 func createItem(w http.ResponseWriter, r *http.Request) {
@@ -51,13 +65,17 @@ func createItem(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	models.InsertItem(&item)
-	responseItem, err := json.Marshal(item)
+	responseBody, err := json.Marshal(item)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8001")
+	if r.Method == http.MethodOptions {
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(responseItem)
+	w.Write(responseBody)
 }
 
 func deleteItem(w http.ResponseWriter, r *http.Request) {
@@ -65,6 +83,18 @@ func deleteItem(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	models.DeleteItem(id)
+	responseBody, err := json.Marshal(DeleteResponse{Id: id})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8001")
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBody)
 }
 
 func updateItem(w http.ResponseWriter, r *http.Request) {
@@ -77,19 +107,33 @@ func updateItem(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	models.UpdateItem(&updateItem, id)
+	convertUintId, _ := strconv.ParseUint(id, 10, 64)
+	updateItem.Model.ID = uint(convertUintId)
+	responseBody, err := json.Marshal(updateItem)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8001")
+	if r.Method == http.MethodOptions {
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseBody)
 }
 
 func StartWebServer() error {
 	fmt.Println("Rest API with Mux Routers")
-	router := mux.NewRouter().StrictSlash(true)
+	r := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/", rootPage)
-	router.HandleFunc("/items", fetchAllItems).Methods("GET")
-	router.HandleFunc("/item/{id}", fetchSingleItem).Methods("GET")
+	r.HandleFunc("/", rootPage)
+	r.HandleFunc("/items", fetchAllItems).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/item/{id}", fetchSingleItem).Methods(http.MethodGet, http.MethodOptions)
 
-	router.HandleFunc("/item", createItem).Methods("POST")
-	router.HandleFunc("/item/{id}", deleteItem).Methods("DELETE")
-	router.HandleFunc("/item/{id}", updateItem).Methods("PUT")
+	r.HandleFunc("/item", createItem).Methods(http.MethodPost, http.MethodOptions)
+	r.HandleFunc("/item/{id}", deleteItem).Methods(http.MethodDelete, http.MethodOptions)
+	r.HandleFunc("/item/{id}", updateItem).Methods(http.MethodPut, http.MethodOptions)
+	r.Use(mux.CORSMethodMiddleware(r))
 
-	return http.ListenAndServe(fmt.Sprintf(":%d", config.Config.ServerPort), router)
+	return http.ListenAndServe(fmt.Sprintf(":%d", config.Config.ServerPort), r)
 }
