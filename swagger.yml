@@ -1,0 +1,158 @@
+openapi: 3.0.0
+servers:
+  - url: http://localhost:8080/
+
+info:
+  description: "This is a sample api server"
+  version: 0.0.1
+  title: Merchandise Control System
+
+paths:
+  /item:
+    post:
+      tags:
+      - "item"
+      summary: create new item
+      operationId: createNewItem
+      requestBody:
+        description: create new item
+        required: true
+        content:
+          text/plain:
+            schema:
+              $ref: '#/components/schemas/RequestItem'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+  /items:
+    get:
+      tags:
+      - "item"
+      summary: fetch all items
+      operationId: fetchItems
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        400:
+          description: "Invalid tag value"
+  /item/{id}:
+    get:
+      tags:
+      - "item"
+      summary: fetch single item
+      operationId: fetchSingleItem
+      parameters:
+        - name: id
+          in: path
+          description: ID of item to fetch
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        400:
+          description: "Invalid tag value"
+    delete:
+      tags:
+      - "item"
+      summary: delete single item
+      operationId: deleteSingleItem
+      parameters:
+        - name: id
+          in: path
+          description: ID of item to fetch
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+        400:
+          description: "Invalid tag value"
+    put:
+      tags:
+      - "item"
+      summary: update single item
+      operationId: updateSingleItem
+      parameters:
+        - name: id
+          in: path
+          description: ID of item to fetch
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: update single item
+        required: true
+        content:
+          text/plain:
+            schema:
+              $ref: '#/components/schemas/RequestItem'
+      responses:
+        200:
+          description: Success
+        400:
+          description: "Invalid tag value"
+components:
+  schemas:
+    Item:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        jan_code:
+          type: "string"
+        item_name:
+          type: "string"
+        price:
+          type: "integer"
+        category_id:
+          type: "integer"
+        series_id:
+          type: "integer"
+        stock:
+          type: "integer"
+        discontinued:
+          type: "boolean"
+        release_date:
+          type: "string"
+        created_at:
+          type: "string"
+        updated_at:
+          type: "string"
+        deleted_at:
+          type: "string"
+    RequestItem:
+      type: "object"
+      properties:
+        jan_code:
+          type: "string"
+        item_name:
+          type: "string"
+        price:
+          type: "integer"
+        category_id:
+          type: "integer"
+        series_id:
+          type: "integer"
+        stock:
+          type: "integer"
+        discontinued:
+          type: "boolean"
+        release_date:
+          type: "string"
